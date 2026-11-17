@@ -51,47 +51,39 @@ def energy_chart():
 
 
 def motives_chart():
+    """Gap chart: Lebanon minus world median, in percentage points (one encoding, orange = passion)."""
+    d = motives.sort_values("gap_pts", ascending=False).reset_index(drop=True)
+    n = len(d)
     fig = go.Figure()
-    n = len(motives)
-    LCOL, WCOL, XMAX = 54, 62, 68  # value columns live inside the data coordinates
-    for i, r in motives.iterrows():
+    for i, r in d.iterrows():
         ps = r["is_passion"] == "Passion"
-        lv, wv = r["lebanon_pct"], r["world_median_pct"]
-        if ps:
-            fig.add_shape(type="rect", x0=0, x1=XMAX, y0=i - 0.5, y1=i + 0.5, fillcolor=BAND,
-                          line_width=0, layer="below")
-        fig.add_shape(type="line", x0=lv, x1=wv, y0=i, y1=i,
-                      line=dict(color=ORANGE if ps else RULE, width=6 if ps else 4), layer="below")
-        hover = ("<b>%{customdata[0]}</b><br>Lebanon %{customdata[1]:.1f}% vs world median %{customdata[2]:.1f}%"
-                 "<br>Rank %{customdata[3]} of %{customdata[4]} countries"
-                 "<br>Lebanon range about %{customdata[5]:.0f} to %{customdata[6]:.0f}% · n=%{customdata[7]}<extra></extra>")
-        cd = [[r["motive"], lv, wv, r["lebanon_rank"], r["countries_ranked"], r["approx_low_pct"],
-               r["approx_high_pct"], r["respondents_lebanon"]]]
-        fig.add_trace(go.Scatter(x=[wv], y=[i], mode="markers", customdata=cd, hovertemplate=hover,
-                                 marker=dict(size=20, symbol="circle-open", color=INK, line=dict(width=3)),
-                                 showlegend=False))
-        fig.add_trace(go.Scatter(x=[lv], y=[i], mode="markers", customdata=cd, hovertemplate=hover,
-                                 marker=dict(size=26 if ps else 20, color=ORANGE if ps else GREY_DARK),
-                                 showlegend=False))
-        weight = "<b>%s</b>" if ps else "%s"
-        fig.add_annotation(x=0, xref="paper", y=i, xanchor="right", xshift=-10, showarrow=False,
-                           text=weight % LABELS.get(r["motive"], r["motive"]),
+        g = float(r["gap_pts"])
+        txt = f"{g:+.0f} pts".replace("-", "\u2212")
+        fig.add_trace(go.Bar(
+            x=[g], y=[i], orientation="h", width=0.62,
+            marker=dict(color=ORANGE if ps else GREY),
+            text=[f"<b>{txt}</b>" if ps else txt], textposition="outside", cliponaxis=False,
+            textfont=dict(size=18 if ps else 16, color=ORANGE if ps else MUTED),
+            customdata=[[r["motive"], r["lebanon_pct"], r["world_median_pct"], r["lebanon_rank"],
+                         r["countries_ranked"], r["approx_low_pct"], r["approx_high_pct"],
+                         r["respondents_lebanon"]]],
+            hovertemplate="<b>%{customdata[0]}</b><br>Lebanon %{customdata[1]:.1f}% vs world median %{customdata[2]:.1f}%"
+                          "<br>Rank %{customdata[3]} of %{customdata[4]} countries"
+                          "<br>Lebanon range about %{customdata[5]:.0f} to %{customdata[6]:.0f}% \u00b7 n=%{customdata[7]}<extra></extra>",
+            showlegend=False))
+        fig.add_annotation(x=0, xref="paper", y=i, yref="y", xanchor="right", xshift=-10, showarrow=False,
+                           text=f"<b>{LABELS.get(r['motive'], r['motive'])}</b>" if ps else LABELS.get(r["motive"], r["motive"]),
                            font=dict(size=17, color=ORANGE if ps else INK))
-        fig.add_annotation(x=LCOL, y=i, showarrow=False, text=weight % f"{lv:.0f}%",
-                           font=dict(size=17, color=ORANGE if ps else INK))
-        fig.add_annotation(x=WCOL, y=i, showarrow=False, text=weight % f"{wv:.0f}%", font=dict(size=17, color=INK))
-    fig.add_annotation(x=LCOL, y=-1.0, showarrow=False, text="<b>Lebanon</b>", font=dict(size=16, color=MUTED))
-    fig.add_annotation(x=WCOL, y=-1.0, showarrow=False, text="<b>World<br>median</b>", font=dict(size=16, color=MUTED))
-    # legend
-    fig.add_trace(go.Scatter(x=[8], y=[-1.0], mode="markers+text", text=["  Lebanon"], textposition="middle right",
-                             marker=dict(size=18, color=GREY_DARK), textfont=dict(size=16), hoverinfo="skip", showlegend=False))
-    fig.add_trace(go.Scatter(x=[22], y=[-1.0], mode="markers+text", text=["  World median"], textposition="middle right",
-                             marker=dict(size=18, symbol="circle-open", color=INK, line=dict(width=3)),
-                             textfont=dict(size=16), hoverinfo="skip", showlegend=False))
-    fig.update_xaxes(range=[0, XMAX], visible=False, fixedrange=True)
-    fig.update_yaxes(range=[n - 0.4, -1.8], visible=False, fixedrange=True)
-    fig.update_layout(height=560, margin=dict(l=200, r=10, t=10, b=10), plot_bgcolor="white",
-                      paper_bgcolor="white", hoverlabel=dict(font_size=14))
+    fig.add_vline(x=0, line=dict(color=INK, width=2))
+    fig.add_annotation(x=0, y=-0.95, yref="y", showarrow=False, text="<b>World median</b>", font=dict(size=16, color=INK))
+    fig.add_annotation(x=-1, y=-0.95, yref="y", xanchor="right", showarrow=False,
+                       text="Lebanon lower \u2190", font=dict(size=15, color=MUTED))
+    fig.add_annotation(x=1, y=-0.95, yref="y", xanchor="left", showarrow=False,
+                       text="\u2192 Lebanon higher", font=dict(size=15, color=MUTED))
+    fig.update_xaxes(range=[-19, 13], visible=False, fixedrange=True)
+    fig.update_yaxes(range=[n - 0.4, -1.5], visible=False, fixedrange=True)
+    fig.update_layout(height=520, margin=dict(l=200, r=20, t=10, b=10), plot_bgcolor="white",
+                      paper_bgcolor="white", bargap=0.3, hoverlabel=dict(font_size=14))
     return fig
 
 
@@ -106,7 +98,7 @@ if which in ("both", "energy"):
 
 if which in ("both", "motives"):
     st.subheader("Passion is not why Lebanese owners say they started: it ranks 88th of 94")
-    st.caption("Share naming each reason among their top three, Lebanon vs the world median")
+    st.caption("Lebanon's share naming each reason among their top three, minus the world median, in percentage points")
     st.plotly_chart(motives_chart(), use_container_width=True, config={"displayModeBar": False})
     st.caption("Source: Meta / OECD / World Bank Future of Business Survey, SME leaders. Lebanon n=124; "
                "owners chose up to three reasons. Hover a row for rank and range.")
