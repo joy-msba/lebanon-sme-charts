@@ -51,40 +51,29 @@ def energy_chart():
 
 
 def motives_chart():
-    """Gap chart: Lebanon minus world median, in percentage points (one encoding, orange = passion)."""
-    d = motives.sort_values("gap_pts", ascending=False).reset_index(drop=True)
+    """Lebanese owners only: share naming each reason among their top three (orange = passion)."""
+    d = motives.sort_values("lebanon_pct", ascending=False).reset_index(drop=True)
     n = len(d)
     fig = go.Figure()
     for i, r in d.iterrows():
         ps = r["is_passion"] == "Passion"
-        g = float(r["gap_pts"])
-        rg = round(g)
-        txt = "0" if rg == 0 else (f"{rg:+d} pt" if abs(rg) == 1 else f"{rg:+d} pts").replace("-", "\u2212")
+        v = float(r["lebanon_pct"])
         fig.add_trace(go.Bar(
-            x=[g], y=[i], orientation="h", width=0.62,
+            x=[v], y=[i], orientation="h", width=0.62,
             marker=dict(color=ORANGE if ps else GREY),
-            text=[f"<b>{txt}</b>" if ps else txt], textposition="outside", cliponaxis=False,
-            textfont=dict(size=18 if ps else 16, color=ORANGE if ps else MUTED),
-            customdata=[[r["motive"], r["lebanon_pct"], r["world_median_pct"], r["lebanon_rank"],
-                         r["countries_ranked"], r["approx_low_pct"], r["approx_high_pct"],
+            text=[f"<b>{v:.0f}%</b>" if ps else f"{v:.0f}%"], textposition="outside", cliponaxis=False,
+            textfont=dict(size=20 if ps else 16, color=ORANGE if ps else MUTED),
+            customdata=[[r["motive"], r["lebanon_pct"], r["approx_low_pct"], r["approx_high_pct"],
                          r["respondents_lebanon"]]],
-            hovertemplate="<b>%{customdata[0]}</b><br>Lebanon %{customdata[1]:.1f}% vs world median %{customdata[2]:.1f}%"
-                          "<br>Rank %{customdata[3]} of %{customdata[4]} countries"
-                          "<br>Lebanon range about %{customdata[5]:.0f} to %{customdata[6]:.0f}% \u00b7 n=%{customdata[7]}<extra></extra>",
+            hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]:.1f}% of Lebanese owners named this"
+                          "<br>Range about %{customdata[2]:.0f} to %{customdata[3]:.0f}% \u00b7 n=%{customdata[4]}<extra></extra>",
             showlegend=False))
         fig.add_annotation(x=0, xref="paper", y=i, yref="y", xanchor="right", xshift=-10, showarrow=False,
                            text=f"<b>{LABELS.get(r['motive'], r['motive'])}</b>" if ps else LABELS.get(r["motive"], r["motive"]),
                            font=dict(size=17, color=ORANGE if ps else INK))
-    fig.add_vline(x=0, line=dict(color=INK, width=2))
-    fig.add_annotation(x=-0.6, y=-0.95, yref="y", xanchor="right", showarrow=False,
-                       text="\u2190 Lebanon lower", font=dict(size=15, color=MUTED))
-    fig.add_annotation(x=0.6, y=-0.95, yref="y", xanchor="left", showarrow=False,
-                       text="Lebanon higher \u2192", font=dict(size=15, color=MUTED))
-    fig.add_annotation(x=0, y=n - 0.35, yref="y", yanchor="top", showarrow=False,
-                       text="<b>0 = world median</b>", font=dict(size=15, color=INK))
-    fig.update_xaxes(range=[-19, 13], visible=False, fixedrange=True)
-    fig.update_yaxes(range=[n + 0.2, -1.5], visible=False, fixedrange=True)
-    fig.update_layout(height=540, margin=dict(l=200, r=20, t=10, b=10), plot_bgcolor="white",
+    fig.update_xaxes(range=[0, 54], visible=False, fixedrange=True)
+    fig.update_yaxes(range=[n - 0.4, -0.6], visible=False, fixedrange=True)
+    fig.update_layout(height=470, margin=dict(l=200, r=20, t=10, b=10), plot_bgcolor="white",
                       paper_bgcolor="white", bargap=0.3, hoverlabel=dict(font_size=14))
     return fig
 
@@ -99,8 +88,8 @@ if which in ("both", "energy"):
                "countries with at least 50 responses. Lebanon n=81. Hover a row for the approximate 95% range.")
 
 if which in ("both", "motives"):
-    st.subheader("Passion is not why Lebanese owners say they started: it ranks 88th of 94")
-    st.caption("Lebanon's share naming each reason among their top three, minus the world median, in percentage points")
+    st.subheader("Only 1 in 5 Lebanese owners name passion as a top reason for starting")
+    st.caption("Share of Lebanese owners naming each reason among their top three")
     st.plotly_chart(motives_chart(), use_container_width=True, config={"displayModeBar": False})
     st.caption("Source: Meta / OECD / World Bank Future of Business Survey, SME leaders. Lebanon n=124; "
-               "owners chose up to three reasons. Hover a row for rank and range.")
+               "owners chose up to three reasons. Hover a bar for the range.")
