@@ -82,7 +82,6 @@ which = st.query_params.get("chart", "both")
 
 if which in ("both", "motives"):
     st.subheader("Passion did not make the top three: Lebanese owners start for balance, independence and money")
-    st.caption("Share of Lebanese owners naming each reason among their top three. The three most-named reasons are in orange.")
     st.plotly_chart(motives_chart(), use_container_width=True, config={"displayModeBar": False})
     st.caption("Source: Meta / OECD / World Bank Future of Business Survey, SME leaders. Lebanon n=124; "
                "owners chose up to three reasons.")
