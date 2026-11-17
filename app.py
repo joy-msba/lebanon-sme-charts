@@ -58,7 +58,8 @@ def motives_chart():
     for i, r in d.iterrows():
         ps = r["is_passion"] == "Passion"
         g = float(r["gap_pts"])
-        txt = f"{g:+.0f} pts".replace("-", "\u2212")
+        rg = round(g)
+        txt = "0" if rg == 0 else (f"{rg:+d} pt" if abs(rg) == 1 else f"{rg:+d} pts").replace("-", "\u2212")
         fig.add_trace(go.Bar(
             x=[g], y=[i], orientation="h", width=0.62,
             marker=dict(color=ORANGE if ps else GREY),
@@ -75,14 +76,15 @@ def motives_chart():
                            text=f"<b>{LABELS.get(r['motive'], r['motive'])}</b>" if ps else LABELS.get(r["motive"], r["motive"]),
                            font=dict(size=17, color=ORANGE if ps else INK))
     fig.add_vline(x=0, line=dict(color=INK, width=2))
-    fig.add_annotation(x=0, y=-0.95, yref="y", showarrow=False, text="<b>World median</b>", font=dict(size=16, color=INK))
-    fig.add_annotation(x=-1, y=-0.95, yref="y", xanchor="right", showarrow=False,
-                       text="Lebanon lower \u2190", font=dict(size=15, color=MUTED))
-    fig.add_annotation(x=1, y=-0.95, yref="y", xanchor="left", showarrow=False,
-                       text="\u2192 Lebanon higher", font=dict(size=15, color=MUTED))
+    fig.add_annotation(x=-0.6, y=-0.95, yref="y", xanchor="right", showarrow=False,
+                       text="\u2190 Lebanon lower", font=dict(size=15, color=MUTED))
+    fig.add_annotation(x=0.6, y=-0.95, yref="y", xanchor="left", showarrow=False,
+                       text="Lebanon higher \u2192", font=dict(size=15, color=MUTED))
+    fig.add_annotation(x=0, y=n - 0.35, yref="y", yanchor="top", showarrow=False,
+                       text="<b>0 = world median</b>", font=dict(size=15, color=INK))
     fig.update_xaxes(range=[-19, 13], visible=False, fixedrange=True)
-    fig.update_yaxes(range=[n - 0.4, -1.5], visible=False, fixedrange=True)
-    fig.update_layout(height=520, margin=dict(l=200, r=20, t=10, b=10), plot_bgcolor="white",
+    fig.update_yaxes(range=[n + 0.2, -1.5], visible=False, fixedrange=True)
+    fig.update_layout(height=540, margin=dict(l=200, r=20, t=10, b=10), plot_bgcolor="white",
                       paper_bgcolor="white", bargap=0.3, hoverlabel=dict(font_size=14))
     return fig
 
