@@ -1,7 +1,8 @@
 """Lebanon SME charts: interactive Streamlit app (Plotly charts with hover tooltips).
 
 Run locally:   pip install -r requirements.txt   then   streamlit run app.py
-Show one chart only (for embedding):  ?chart=energy  or  ?chart=motives
+Story order: motives first (the myth), then energy (the pressure).
+Show one chart only (for embedding):  ?chart=motives  or  ?chart=energy
 """
 import pandas as pd
 import plotly.graph_objects as go
@@ -81,16 +82,16 @@ def motives_chart():
 
 which = st.query_params.get("chart", "both")
 
-if which in ("both", "energy"):
-    st.subheader("Lebanese business owners feel energy costs harder than almost anyone")
-    st.caption('Share saying energy costs affected their business "a lot" or "a great deal", top 9 of 90 countries')
-    st.plotly_chart(energy_chart(), use_container_width=True, config={"displayModeBar": False})
-    st.caption("Source: Meta / OECD / World Bank Future of Business Survey, SME leaders. Survey-weighted shares; "
-               "countries with at least 50 responses. Lebanon n=81. Hover a row for the approximate 95% range.")
-
 if which in ("both", "motives"):
     st.subheader("Passion did not make the top three: Lebanese owners start for balance, independence and money")
     st.caption("Share of Lebanese owners naming each reason among their top three. The three most-named reasons are in orange.")
     st.plotly_chart(motives_chart(), use_container_width=True, config={"displayModeBar": False})
     st.caption("Source: Meta / OECD / World Bank Future of Business Survey, SME leaders. Lebanon n=124; "
                "owners chose up to three reasons. Hover a bar for the range.")
+
+if which in ("both", "energy"):
+    st.subheader("Lebanese business owners feel energy costs harder than almost anyone")
+    st.caption('Share saying energy costs affected their business "a lot" or "a great deal", top 9 of 90 countries')
+    st.plotly_chart(energy_chart(), use_container_width=True, config={"displayModeBar": False})
+    st.caption("Source: Meta / OECD / World Bank Future of Business Survey, SME leaders. Survey-weighted shares; "
+               "countries with at least 50 responses. Lebanon n=81. Hover a row for the approximate 95% range.")
