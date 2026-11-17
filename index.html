@@ -1,0 +1,126 @@
+<title>Out of Power Charts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: two stacked chart blocks, each a finding-style title over an SVG drawn to the container width. */
+:root{
+  --bg:#ffffff; --ink:#111827; --muted:#4b5563; --dot:#9ca3af; --dot-lebanon-grey:#6b7280;
+  --rule:#e5e7eb; --accent:#c2410c; --accent-soft:#f8d9cc; --band:#fdeee7; --tip-bg:#111827; --tip-ink:#f9fafb;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --ink:#f3f4f6; --muted:#9ca3af; --dot:#6b7280; --dot-lebanon-grey:#9ca3af;
+  --rule:#252d38; --accent:#fb7a3c; --accent-soft:#5a2e1c; --band:#26201d; --tip-bg:#f3f4f6; --tip-ink:#111827; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --ink:#f3f4f6; --muted:#9ca3af; --dot:#6b7280; --dot-lebanon-grey:#9ca3af;
+  --rule:#252d38; --accent:#fb7a3c; --accent-soft:#5a2e1c; --band:#26201d; --tip-bg:#f3f4f6; --tip-ink:#111827; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);
+  padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+section{min-width:0}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(20px,3.6vw,28px);line-height:1.2;margin:0 0 8px;text-wrap:balance}
+.sub{margin:0 0 12px;color:var(--muted);font-size:14px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--body);fill:var(--ink)}
+.src{margin:10px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
+.row{cursor:default;outline:none}
+.row:focus-visible .hit{stroke:var(--accent);stroke-width:2}
+.hit{fill:transparent}
+.row:hover .hit{fill:color-mix(in srgb,var(--ink) 5%,transparent)}
+#tip{position:fixed;z-index:20;pointer-events:none;background:var(--tip-bg);color:var(--tip-ink);font-size:13px;line-height:1.45;
+  padding:8px 10px;border-radius:6px;max-width:240px;opacity:0;transition:opacity .1s}
+#tip b{font-weight:600}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap">
+
+<main>
+  <section aria-labelledby="t1">
+    <h2 id="t1">Lebanese business owners feel energy costs harder than almost anyone</h2>
+    <p class="sub">Share saying energy costs affected their business "a lot" or "a great deal", top 9 of 90 countries</p>
+    <div id="c1"></div>
+    <p class="src">Source: Meta / OECD / World Bank Future of Business Survey, SME leaders. Survey-weighted shares; countries with at least 50 responses. Lebanon n=81. Hover a row for the approximate 95% range.</p>
+  </section>
+  <section aria-labelledby="t2">
+    <h2 id="t2">Passion is not why Lebanese owners say they started: it ranks 88th of 94</h2>
+    <p class="sub">Share naming each reason among their top three, Lebanon vs the world median</p>
+    <div id="c2"></div>
+    <p class="src">Source: Meta / OECD / World Bank Future of Business Survey, SME leaders. Lebanon n=124; owners chose up to three reasons. Hover a row for rank and range.</p>
+  </section>
+</main>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const energy=[["Lebanon",72.78,81,63.09,82.48],["Greece",68.45,165,61.36,75.54],["Honduras",67.91,95,58.52,77.3],["Türkiye",65.77,168,58.59,72.94],["Argentina",63.65,79,53.04,74.25],["Spain",61.93,179,54.82,69.04],["North Macedonia",60.88,108,51.68,70.09],["Ghana",60.1,133,51.78,68.42],["Dominican Republic",57.94,73,46.61,69.26]];
+const MEDIAN=38.62;
+const motives=[["Work-life balance",44.85,37.08,18,36.1,53.61],["Be more independent",37.42,46.1,69,28.9,45.94],["Make more money",36.9,36.73,47,28.41,45.39],["Family business",21.78,17.7,34,14.51,29.04],["Pursue a passion or hobby",21.49,34.64,88,14.26,28.71],["A new idea nobody was doing",12.81,14.0,58,6.92,18.69],["No other jobs available",11.49,13.62,53,5.88,17.1]];
+const motiveLabel={"Pursue a passion or hobby":"Passion or hobby","A new idea nobody was doing":"A new idea"};
+const NS="http://www.w3.org/2000/svg", tip=document.getElementById("tip");
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function el(p,t,a,txt){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;p.appendChild(e);return e}
+function showTip(e,html){tip.innerHTML=html;tip.style.opacity=1;const r=tip.getBoundingClientRect();
+  let x=e.clientX+14,y=e.clientY+14;if(x+r.width>innerWidth-8)x=e.clientX-r.width-14;if(y+r.height>innerHeight-8)y=e.clientY-r.height-14;
+  tip.style.left=Math.max(8,x)+"px";tip.style.top=Math.max(8,y)+"px"}
+function hideTip(){tip.style.opacity=0}
+function wire(g,html){
+  g.addEventListener("pointermove",e=>showTip(e,html));g.addEventListener("pointerleave",hideTip);
+  g.addEventListener("focus",()=>{const b=g.getBoundingClientRect();showTip({clientX:b.left+b.width/2,clientY:b.top},html)});
+  g.addEventListener("blur",hideTip)}
+const pct=v=>Math.round(v)+"%";
+
+function drawEnergy(){
+  const host=document.getElementById("c1");host.textContent="";
+  const W=host.clientWidth||640,small=W<560,fs=small?13:17,rh=small?36:48,lw=small?112:190,top=small?34:44;
+  const H=top+energy.length*rh+8,pl=lw+14,pr=W-(small?50:70),k=(pr-pl)/75;
+  const x=v=>pl+v*k,svg=el(host,"svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"Ranked dot plot of energy cost impact, Lebanon first at 73 percent"});
+  const mx=x(MEDIAN);
+  el(svg,"text",{x:mx,y:small?14:18,"text-anchor":"middle","font-weight":700,"font-size":fs},"World median 39%");
+  energy.forEach((d,i)=>{
+    const lb=i===0,y=top+i*rh+rh/2,g=el(svg,"g",{class:"row",tabindex:0});
+    el(g,"rect",{class:"hit",x:0,y:y-rh/2,width:W,height:rh});
+    el(g,"line",{x1:mx,x2:x(d[1]),y1:y,y2:y,stroke:lb?css("--accent-soft"):css("--rule"),"stroke-width":lb?3:3});
+    el(g,"circle",{cx:x(d[1]),cy:y,r:lb?(small?9:14):(small?7:10),fill:lb?css("--accent"):css("--dot")});
+    el(g,"text",{x:lw,y:y+fs*0.35,"text-anchor":"end","font-size":fs,"font-weight":lb?700:400,fill:lb?css("--accent"):css("--ink"),style:lb?`fill:${css("--accent")}`:""},d[0]);
+    el(g,"text",{x:x(d[1])+(lb?(small?14:20):(small?12:16)),y:y+fs*0.36,"font-size":lb?fs+(small?1:5):fs,"font-weight":lb?700:400,style:`fill:${lb?css("--accent"):css("--muted")}`},pct(d[1]));
+    wire(g,`<b>${d[0]}</b><br>${d[1].toFixed(1)}% say energy costs hit them a lot or a great deal<br>Range about ${d[3].toFixed(0)} to ${d[4].toFixed(0)}% · n=${d[2]}`);
+  });
+  el(svg,"line",{x1:mx,x2:mx,y1:small?22:28,y2:H,stroke:css("--ink"),"stroke-width":2.5,"stroke-dasharray":"7 6"});
+}
+
+function drawMotives(){
+  const host=document.getElementById("c2");host.textContent="";
+  const W=host.clientWidth||640,small=W<560,fs=small?13:17,rh=small?40:58,vw=small?52:92,lw=small?112:200,top=small?64:84;
+  const H=top+motives.length*rh+4,pl=lw+16,c1=W-vw*2+vw/2-4,c2=W-vw/2,pr=W-vw*2-12,k=(pr-pl)/48;
+  const x=v=>pl+v*k,svg=el(host,"svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":"Dumbbell chart of reasons for starting a business, Lebanon against the world median; passion is 21 percent against 35 percent"});
+  // legend
+  const ly=small?10:16,lx=pl;
+  el(svg,"circle",{cx:lx+8,cy:ly,r:small?6:9,fill:css("--dot-lebanon-grey")});
+  el(svg,"text",{x:lx+24,y:ly+fs*0.35,"font-size":small?12:16},"Lebanon");
+  const l2=lx+(small?84:112);
+  el(svg,"circle",{cx:l2+8,cy:ly,r:small?5:8,fill:"none",stroke:css("--ink"),"stroke-width":2.5});
+  el(svg,"text",{x:l2+24,y:ly+fs*0.35,"font-size":small?12:16},small?"World":"World median");
+  const hy=small?42:48;
+  el(svg,"text",{x:c1,y:hy,"text-anchor":"middle","font-weight":700,"font-size":small?11:16,style:`fill:${css("--muted")}`},"Lebanon");
+  el(svg,"text",{x:c2,y:hy-(small?0:6),"text-anchor":"middle","font-weight":700,"font-size":small?11:16,style:`fill:${css("--muted")}`},small?"World":"World");
+  el(svg,"text",{x:c2,y:hy+(small?12:14),"text-anchor":"middle","font-weight":700,"font-size":small?11:16,style:`fill:${css("--muted")}`},"median");
+  motives.forEach((d,i)=>{
+    const ps=d[0].startsWith("Pursue"),y=top+i*rh+rh/2,g=el(svg,"g",{class:"row",tabindex:0});
+    if(ps)el(g,"rect",{x:pl-2,y:y-rh/2,width:W-pl+2,height:rh,fill:css("--band")});
+    el(g,"rect",{class:"hit",x:0,y:y-rh/2,width:W,height:rh});
+    el(g,"line",{x1:x(d[1]),x2:x(d[2]),y1:y,y2:y,stroke:ps?css("--accent"):css("--rule"),"stroke-width":ps?(small?4:6):4,"stroke-linecap":"butt"});
+    el(g,"circle",{cx:x(d[1]),cy:y,r:ps?(small?8:15):(small?6:12),fill:ps?css("--accent"):css("--dot-lebanon-grey")});
+    el(g,"circle",{cx:x(d[2]),cy:y,r:small?6:12,fill:"none",stroke:css("--ink"),"stroke-width":small?2:3});
+    const lab=small&&ps?"Passion":(motiveLabel[d[0]]||d[0]);
+    el(g,"text",{x:lw,y:y+fs*0.35,"text-anchor":"end","font-size":fs,"font-weight":ps?700:400,style:ps?`fill:${css("--accent")}`:""},small?lab.replace("Be more independent","Independence").replace("Make more money","More money").replace("Work-life balance","Work-life").replace("Family business","Family firm").replace("No other jobs available","No other jobs"):lab);
+    el(g,"text",{x:c1,y:y+fs*0.35,"text-anchor":"middle","font-size":fs,"font-weight":ps?700:400,style:ps?`fill:${css("--accent")}`:""},pct(d[1]));
+    el(g,"text",{x:c2,y:y+fs*0.35,"text-anchor":"middle","font-size":fs,"font-weight":ps?700:400},pct(d[2]));
+    wire(g,`<b>${d[0]}</b><br>Lebanon ${d[1].toFixed(1)}% vs world median ${d[2].toFixed(1)}%<br>Rank ${d[3]} of 94 countries<br>Lebanon range about ${d[4].toFixed(0)} to ${d[5].toFixed(0)}% · n=124`);
+  });
+}
+function view(){const h=location.hash.replace('#','');const s=document.querySelectorAll('section');if(s.length===2){s[0].hidden=(h==='motives');s[1].hidden=(h==='energy')}}
+addEventListener('hashchange',()=>{view();draw()});view();
+function draw(){drawEnergy();drawMotives()}
+draw();
+let rt;addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(draw,120)});
+matchMedia("(prefers-color-scheme:dark)").addEventListener("change",draw);
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+document.fonts&&document.fonts.ready.then(draw);
+</script>
