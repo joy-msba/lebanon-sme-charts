@@ -65,8 +65,10 @@ def motives_chart():
             marker=dict(color=ORANGE if top3 else GREY),
             text=[f"<b>{v:.0f}%</b>" if top3 else f"{v:.0f}%"], textposition="outside", cliponaxis=False,
             textfont=dict(size=20 if top3 else 16, color=ORANGE if top3 else MUTED),
-            customdata=[[r["motive"], r["lebanon_pct"], i + 1]],
-            hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]:.1f}% of Lebanese owners named this (#%{customdata[2]} of 7)<extra></extra>",
+            customdata=[[r["motive"], r["lebanon_pct"], i + 1, r["approx_low_pct"], r["approx_high_pct"],
+                         r["respondents_lebanon"]]],
+            hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]:.1f}% of Lebanese owners named this (#%{customdata[2]} of 7)"
+                          "<br>Range about %{customdata[3]:.0f} to %{customdata[4]:.0f}% · n=%{customdata[5]}<extra></extra>",
             showlegend=False))
         fig.add_annotation(x=0, xref="paper", y=i, yref="y", xanchor="right", xshift=-10, showarrow=False,
                            text=f"<b>{LABELS.get(r['motive'], r['motive'])}</b>" if top3 else LABELS.get(r["motive"], r["motive"]),
