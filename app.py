@@ -65,10 +65,8 @@ def motives_chart():
             marker=dict(color=ORANGE if top3 else GREY),
             text=[f"<b>{v:.0f}%</b>" if top3 else f"{v:.0f}%"], textposition="outside", cliponaxis=False,
             textfont=dict(size=20 if top3 else 16, color=ORANGE if top3 else MUTED),
-            customdata=[[r["motive"], r["lebanon_pct"], r["approx_low_pct"], r["approx_high_pct"],
-                         r["respondents_lebanon"], i + 1]],
-            hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]:.1f}% of Lebanese owners named this (#%{customdata[5]} of 7)"
-                          "<br>Range about %{customdata[2]:.0f} to %{customdata[3]:.0f}% \u00b7 n=%{customdata[4]}<extra></extra>",
+            customdata=[[r["motive"], r["lebanon_pct"], i + 1]],
+            hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]:.1f}% of Lebanese owners named this (#%{customdata[2]} of 7)<extra></extra>",
             showlegend=False))
         fig.add_annotation(x=0, xref="paper", y=i, yref="y", xanchor="right", xshift=-10, showarrow=False,
                            text=f"<b>{LABELS.get(r['motive'], r['motive'])}</b>" if top3 else LABELS.get(r["motive"], r["motive"]),
@@ -87,7 +85,7 @@ if which in ("both", "motives"):
     st.caption("Share of Lebanese owners naming each reason among their top three. The three most-named reasons are in orange.")
     st.plotly_chart(motives_chart(), use_container_width=True, config={"displayModeBar": False})
     st.caption("Source: Meta / OECD / World Bank Future of Business Survey, SME leaders. Lebanon n=124; "
-               "owners chose up to three reasons. Hover a bar for the range.")
+               "owners chose up to three reasons.")
 
 if which in ("both", "energy"):
     st.subheader("Lebanese business owners feel energy costs harder than almost anyone")
