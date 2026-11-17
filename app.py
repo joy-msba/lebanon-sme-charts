@@ -51,7 +51,7 @@ def energy_chart():
 
 
 def motives_chart():
-    """Lebanese owners only. Orange = the three most-named reasons; passion is named in bold but stays grey."""
+    """Lebanese owners only. Orange = the three most-named reasons; passion stays grey like the rest."""
     d = motives.sort_values("lebanon_pct", ascending=False).reset_index(drop=True)
     n = len(d)
     fig = go.Figure()
@@ -62,15 +62,15 @@ def motives_chart():
         fig.add_trace(go.Bar(
             x=[v], y=[i], orientation="h", width=0.62,
             marker=dict(color=ORANGE if top3 else GREY),
-            text=[f"<b>{v:.0f}%</b>" if (top3 or ps) else f"{v:.0f}%"], textposition="outside", cliponaxis=False,
-            textfont=dict(size=20 if top3 else 16, color=ORANGE if top3 else (INK if ps else MUTED)),
+            text=[f"<b>{v:.0f}%</b>" if top3 else f"{v:.0f}%"], textposition="outside", cliponaxis=False,
+            textfont=dict(size=20 if top3 else 16, color=ORANGE if top3 else MUTED),
             customdata=[[r["motive"], r["lebanon_pct"], r["approx_low_pct"], r["approx_high_pct"],
                          r["respondents_lebanon"], i + 1]],
             hovertemplate="<b>%{customdata[0]}</b><br>%{customdata[1]:.1f}% of Lebanese owners named this (#%{customdata[5]} of 7)"
                           "<br>Range about %{customdata[2]:.0f} to %{customdata[3]:.0f}% \u00b7 n=%{customdata[4]}<extra></extra>",
             showlegend=False))
         fig.add_annotation(x=0, xref="paper", y=i, yref="y", xanchor="right", xshift=-10, showarrow=False,
-                           text=f"<b>{LABELS.get(r['motive'], r['motive'])}</b>" if (top3 or ps) else LABELS.get(r["motive"], r["motive"]),
+                           text=f"<b>{LABELS.get(r['motive'], r['motive'])}</b>" if top3 else LABELS.get(r["motive"], r["motive"]),
                            font=dict(size=17, color=ORANGE if top3 else INK))
     fig.update_xaxes(range=[0, 54], visible=False, fixedrange=True)
     fig.update_yaxes(range=[n - 0.4, -0.6], visible=False, fixedrange=True)
